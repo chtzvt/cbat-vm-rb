@@ -135,7 +135,7 @@ class TerminateInstruction
     include Executable
 
     def exec
-        @raw_str.batch_interpolate_string(@var_lt)
+        @ec = :terminated
     end
 
     def to_batch
@@ -151,7 +151,7 @@ class BreakpointInstruction
     include Executable
 
     def exec
-        @raw_str.batch_interpolate_string(@var_lt)
+        @ec = :breakpoint
     end
 
     def to_batch

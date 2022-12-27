@@ -1,11 +1,7 @@
-@echo off
-echo "Hello there!"
-echo "Welcome to the test program."
-set /p NAME=Please enter your name:
-echo %NAME% >>"USERS.TXT"
-if %NAME% EQU "Charlton" goto WAZZUP
-echo "Goodbye, %NAME%"
-exit 
-
-:WAZZUP 
-echo "Wazzup dad"
+set FIRST="CBAT"
+set LAST="BatchVM"
+echo "Hey, %USERNAME%! It is %DATE%. My name is %FIRST% %LAST%."
+set /p NAME="Please enter your name: "
+echo "%NAME%" >>"USERS.TXT"
+echo "Great to meet you, %NAME%."
+echo "It is %TIME% at %DATE%. Here's a random number: %RANDOM%."

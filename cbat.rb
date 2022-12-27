@@ -1,18 +1,13 @@
+require './util'
+require './state'
 require './instructions'
 
-class CBATLoader
+module CBATLoader
     attr_accessor :file_name, :entry_point, :version
-    attr_accessor :labels 
     attr_accessor :instructions
 
-    attr_accessor :var_lt, :label_lt, :file_lt, :exec_ctx
-
-    def initialize
-        @var_lt = VariableLookupTable.new
-        @label_lt = LabelLookupTable.new 
-        @file_lt = FileLookupTable.new 
-        @instructions = []
-    end
+    attr_accessor :var_lt, :label_lt, :file_lt
+    attr_accessor :exec_ctx
 
     def open(path)
         current_section = :unknown
@@ -52,7 +47,7 @@ class CBATLoader
         when "filename"
             @file_name = kv[1]
         when "entry"
-            @entry_point = kv[1] 
+            @entry_point = kv[1].to_i
         when "ver"
             @version = kv[1]
         end
@@ -76,35 +71,74 @@ class CBATLoader
             i = IfEqualInstruction.new
         when "trm"
             i = TerminateInstruction.new
+        when "st"
+            i = StoreInstruction.new
+        else 
+            puts "cbat: unknown instruction `#{kv[0]}`"
+            exit 
         end
 
         i.init(kv[1], @var_lt, @label_lt, @file_lt, @exec_ctx)
         @instructions.append(i)
     end
 
-    def to_cbat 
+    def to_cbat_instrs
+        puts "CBAT::#{@file_name}"
         @instructions.map do |instr|
             puts instr.to_cbat
         end
+        puts "(end)"
+    end
+
+    def to_cbat_file
+        puts ".header"
+        puts "\tfilename #{@file_name}"
+        puts "\tentry #{@entry_point}"
+        puts "\tver #{@version}"
+        puts ".labels"
+        @label_lt.map do |k,v|
+            puts "\t#{k}:#{v}"
+        end   
+        puts ".instrs"  
+        @instructions.map do |instr|
+            puts "\t#{instr.to_cbat}"
+        end
+        puts "\ttrm"
     end
 
     def to_batch 
+        puts "BAT::#{@file_name}"
         @instructions.map do |instr|
             puts instr.to_batch
         end
+        puts "(end)"
     end
 end
 
 
 class Program
- #   include CBATLoader
-    # global state
-    attr_accessor :var_lt, :file_lt
-    # local state
-    attr_accessor :label_lt, :current_instr
+    include CBATLoader
+
+    def initialize
+        @var_lt = VariableLookupTable.new
+        @label_lt = LabelLookupTable.new 
+        @file_lt = FileLookupTable.new 
+        @instructions = []
+        @exec_ctx = :idle
+    end 
 
     def run()
+        @exec_ctx = :running 
+        current_instr = @entry_point
 
+        while @exec_ctx == :running 
+            @instructions[current_instr].exec()
+            current_instr += 1
+
+            if current_instr >= @instructions.length 
+                @exec_ctx = :eof 
+            end
+        end 
     end
 
     def insert_instr(instruction, address)
