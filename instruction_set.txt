@@ -1,0 +1,111 @@
+VM Instruction Set
+
+## I/O and file manipulation
+e STRING -> echo to terminal (impl)
+af STRING,PATH -> create/append to file (impl)
+wf STRING,PATH -> write/overwrite file
+df PATH -> delete file
+t PATH -> type file contents
+stp IDENT,PROMPT -> Prompt user for IDENT using optional string
+
+## Prompts, setting variables
+st IDENT,VALUE -> set IDENT to VALUE (impl)
+sta IDENT,EXPR -> arithmetic set (won't implement, substitute math instrs below instead)
+stf PATH IDENT -> set variable content from file
+
+## Mathematics
+ad IDENT,VALUE -> Add
+sb IDENT,VALUE -> Subtract
+ml IDENT,VALUE -> Multiply
+dv IDENT,VALUE -> Divide
+
+## Control flow
+g LABEL -> goto (impl)
+c PATH -> call
+trm -> terminate (impl)
+iex PATH,LABEL -> if exist
+inx PATH,LABEL -> if not exist
+ieq IDENT,VALUE,LABEL -> if equal
+inq IDENT,VALUE,LABEL -> if not equal 
+* If LABEL is unspecified, the following instruction will be executed in the true case or skipped otherwise
+
+## Utility
+cls -> clear terminal
+clr INT -> color
+p INT -> pause, quiet pause if INT = 0 (impl)
+
+Built-in identifiers
+%username% (impl)
+%date% (impl)
+%time%  (impl)
+%random% (impl)
+
+af "Username: ^%DESUN%","C:\DSOFT\DMS\USERS\USERDATA\ARC\%ARC%.dat"
+
+:systemlog
+stf CSYSPASS,"C:\DSOFT\DMS\ADMINTOOLS\SYSPASSWD.txt"
+stp SYSTEMPASSWD,"Password:"
+ieq CSYSPASS,SYSTEMPASSWD,systemcall
+e "invalid."
+p
+g DMSLOGIN
+
+:GOODARC
+clr
+e "Your credentials are:"
+e ""
+t "C:\DSOFT\DMS\USERS\USERDATA\ARC\%ARC%.dat"
+e "Please, store these credentials in a safe place!"
+e "Press any key to return to login..."
+p 0
+g DMSLOGIN
+
+## Execution Frame
+
+Header
+    Filename
+    Entrypoint
+    Version
+Label Table
+    Hash label:index
+Variable Table
+    Hash identifier:string
+Read-Only Strings Table
+    Identifier:string 
+Instructions
+    Array of instructions
+
+
+## Normalized IR Format
+
+Input
+
+    TEST.BAT
+
+    echo "Hello there!"
+    echo "Welcome to the test program."
+    set /p NAME=Please enter your name:
+    echo %NAME% >>"USERS.TXT"
+    if %NAME% EQU "Charlton" goto WAZZUP
+    echo "Goodbye, %NAME%"
+    exit 
+
+    :WAZZUP 
+    echo "Wazzup dad"
+
+
+.header
+    filename "TEST.BAT"
+    entry 0
+    ver 0.1
+.labels 
+    WAZZUP:7
+.instrs
+    e "Hello there!"
+    e "Welcome to the test program."
+    stp NAME,"Please enter your name:"
+    af NAME,"USERS.TXT"
+    ieq NAME,"Charlton",WAZZUP
+    e "Goodbye, %NAME%"
+    trm
+    e "Wazzup dad"

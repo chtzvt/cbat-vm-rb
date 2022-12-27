@@ -60,32 +60,29 @@ module CBATLoader
 
     def read_instructions_field(field)
         kv = field.split(' ', 2)
-        case kv[0]
-        when "e"
-            i = EchoInstruction.new
-        when "stp"
-            i = SetPromptInstruction.new
-        when "af"
-            i = AppendFileInstruction.new
-        when "ieq"
-            i = IfEqualInstruction.new
-        when "trm"
-            i = TerminateInstruction.new
-        when "st"
-            i = StoreInstruction.new
-        else 
-            puts "cbat: unknown instruction `#{kv[0]}`"
-            exit 
-        end
+        instr_map = InstructionMap.instance
+
+        i = instr_map.lookup(kv[0])
+
+        if i.class == IllegalInstruction
+            raise "cbat: illegal instruction `#{kv[0]}`"
+        end 
 
         i.init(kv[1], @var_lt, @label_lt, @file_lt, @exec_ctx)
         @instructions.append(i)
     end
 
-    def to_cbat_instrs
-        puts "CBAT::#{@file_name}"
+    def dump_cbat
         @instructions.map do |instr|
             puts instr.to_cbat
+        end
+        puts "(end)"
+    end
+
+    def dump_batch 
+        puts "#{@file_name}"
+        @instructions.map do |instr|
+            puts instr.to_batch
         end
         puts "(end)"
     end
@@ -103,45 +100,6 @@ module CBATLoader
         @instructions.map do |instr|
             puts "\t#{instr.to_cbat}"
         end
-        puts "\ttrm"
-    end
-
-    def to_batch 
-        puts "BAT::#{@file_name}"
-        @instructions.map do |instr|
-            puts instr.to_batch
-        end
-        puts "(end)"
-    end
-end
-
-
-class Program
-    include CBATLoader
-
-    def initialize
-        @var_lt = VariableLookupTable.new
-        @label_lt = LabelLookupTable.new 
-        @file_lt = FileLookupTable.new 
-        @instructions = []
-        @exec_ctx = :idle
-    end 
-
-    def run()
-        @exec_ctx = :running 
-        current_instr = @entry_point
-
-        while @exec_ctx == :running 
-            @instructions[current_instr].exec()
-            current_instr += 1
-
-            if current_instr >= @instructions.length 
-                @exec_ctx = :eof 
-            end
-        end 
-    end
-
-    def insert_instr(instruction, address)
-        @instructions.insert(address, instruction)
+        puts "\t"
     end
 end

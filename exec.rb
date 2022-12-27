@@ -1,9 +1,5 @@
-require './util'
-require './cbat'
+require './vm'
 
 program = Program.new
 program.open("input.cbat")
-puts program.to_cbat_file
-puts program.to_batch
-
 program.run

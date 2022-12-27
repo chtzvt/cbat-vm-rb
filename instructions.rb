@@ -1,3 +1,36 @@
+require 'singleton'
+
+class InstructionMap 
+    include Singleton 
+
+    def lookup(op)
+        case op
+        when "e"
+            EchoInstruction.new
+        when "stp"
+            SetPromptInstruction.new
+        when "af"
+            AppendFileInstruction.new
+        when "ieq"
+            IfEqualInstruction.new
+        when "trm"
+            TerminateInstruction.new
+        when "st"
+            StoreInstruction.new
+        when "bp"
+            BreakpointInstruction.new
+        when "nop"
+            NopInstruction.new
+        when "g"
+            GotoInstruction.new
+        when "p"
+            PauseInstruction.new
+        else 
+            IllegalInstruction.new
+        end
+    end
+end
+
 module Executable
     attr_accessor :args, :raw_args, :var_lt, :label_lt, :file_lt, :ec
 
@@ -70,7 +103,7 @@ class SetPromptInstruction
 
     def exec
         str = args[1]
-        str = "Input:" if args[1].empty?
+        str = "Input: " if args[1].empty?
         @var_lt.store(args[0].to_sym, prompt(str).chomp)
     end
 
@@ -80,6 +113,41 @@ class SetPromptInstruction
 
     def to_cbat
         "stp #{@raw_args[0]},\"#{@raw_args[1]}\""
+    end
+end
+
+class PauseInstruction
+    include Executable
+
+    def prompt(msg)
+        puts msg.batch_remove_quotes unless msg.empty?
+        gets
+    end
+
+    def exec
+        if args.nil? or args[0].to_i != 0
+            str = "Press any key to continue..."
+        else 
+            str = ""
+        end 
+
+        prompt(str).chomp
+    end
+
+    def to_batch
+        if args.nil? or args[0].to_i != 0
+            "pause"
+        else 
+            "pause>nul"
+        end 
+    end
+
+    def to_cbat
+        if args.nil? or args[0].to_i != 0
+            "p"
+        else 
+            "p 0"
+        end 
     end
 end
 
@@ -101,6 +169,7 @@ end
 
 class IfEqualInstruction
     include Executable
+    attr_accessor :target
 
     def exec
         @raw_str.batch_interpolate_string(@var_lt)
@@ -119,8 +188,13 @@ class GotoInstruction
     include Executable
 
     def exec
-        @raw_str.batch_interpolate_string(@var_lt)
+        @ec = :jump
+        @label_lt.get(@args[0])
     end
+
+    def target 
+        @args[0].to_i
+    end 
 
     def to_batch
         "goto #{@raw_args[0]}"
@@ -154,7 +228,43 @@ class BreakpointInstruction
         @ec = :breakpoint
     end
 
+    def to_cbat
+        "bp"
+    end
+
     def to_batch
         "::cbat:breakpoint"
     end
 end
+
+class NopInstruction
+    include Executable
+
+    def exec
+        ""
+    end
+
+    def to_cbat
+        "nop"
+    end
+
+    def to_batch
+        "::cbat:nop"
+    end
+end   
+
+class IllegalInstruction
+    include Executable
+
+    def exec
+        ""
+    end
+
+    def to_cbat
+        "nop"
+    end
+
+    def to_batch
+        "::cbat:nop"
+    end
+end   

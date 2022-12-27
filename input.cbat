@@ -1,14 +1,17 @@
 .header
-    filename "TEST.BAT"
-    entry 0
-    ver 0.1
+        filename "TEST.BAT"
+        entry 0
+        ver 0.1
 .labels
-    WAZZUP:7
+        loop:2
 .instrs
-    st FIRST,"CBAT"
-    st LAST,"BatchVM"
-    e "Hey, %USERNAME%! It is %DATE%. My name is %FIRST% %LAST%."
-    stp NAME,"Please enter your name: "
-    af "%NAME%","USERS.TXT"
-    e "Great to meet you, %NAME%."
-    e "It is %TIME% at %DATE%. Here's a random number: %RANDOM%."
+        st FIRST,"CBAT"
+        st LAST,"BatchVM"
+        e "Hey, %USERNAME%! My name is %FIRST% %LAST%."
+        p 0
+        stp NAME,"Please enter your name: "
+        af "%NAME%","USERS.TXT"
+        e "Great to meet you, %NAME%."
+        bp
+        g loop
+        e "It is %TIME% at %DATE%. Here's a random number: %RANDOM%."
