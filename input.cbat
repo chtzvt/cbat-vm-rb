@@ -1,0 +1,15 @@
+.header
+    filename "TEST.BAT"
+    entry 0
+    ver 0.1
+.labels 
+    WAZZUP:7
+.instrs
+    e "Hello there!"
+    e "Welcome to the test program."
+    stp NAME,"Please enter your name:"
+    af "%NAME%","USERS.TXT"
+    ieq NAME,"Charlton",WAZZUP
+    e "Goodbye, %NAME%"
+    trm
+    e "Wazzup dad"
