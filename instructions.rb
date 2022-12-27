@@ -23,7 +23,7 @@ class EchoInstruction
     include Executable
 
     def exec
-        puts @args[0].batch_interpolate_string(@var_lt).batch_remove_quotes
+        puts @args[0].batch_interpolate_string(@var_lt)
     end
 end
 

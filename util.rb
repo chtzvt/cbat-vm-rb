@@ -4,7 +4,12 @@ class String
     end
 
     def batch_get_instr_args 
-        self.split(/,(?=(?:[^\"\']*\"[^\"\']*\")*[^\"\']*$)/)
+        raw_args = self.split(/,(?=(?:[^\"\']*\"[^\"\']*\")*[^\"\']*$)/)
+        clean_args = []
+        raw_args.map do |arg|
+            clean_args << arg.batch_remove_quotes
+        end
+        clean_args
     end 
 
     def batch_interpolate_string var_lt
