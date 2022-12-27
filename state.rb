@@ -20,7 +20,21 @@ end
 
 class VariableLookupTable
     include LookupTable
-    # Need to add support for builtins 
+
+    def get(name)
+        case name.downcase.to_sym
+        when :date
+            Time.new.strftime("%Y-%m-%d")
+        when :time
+            Time.new.strftime("%H:%M:%S")
+        when :random
+            rand(0..32767).to_s
+        when :username
+            `whoami`.chomp
+        else
+            @lt.fetch(name.downcase.to_sym, "undefined")
+        end
+    end
 end 
 
 class LabelLookupTable
@@ -61,26 +75,32 @@ class FileLookupTable
     end
 end 
 
-class ProgramCounter
-    attr_reader :pc 
+class SubroutineLookupTable
+    include LookupTable
+end 
 
-    def initialize
-        @pc = 0
+class ExecutionContext
+    attr_accessor :call_stack, :current_file, :current_instr
+
+    def initialize()
+        @call_stack = []
     end
 
-    def set(val)
-        @pc = val
+    def call(sub)
+
+    end 
+
+    def push_stack_frame(filename, instr_addr)
+        @call_stack << [filename, instr_addr]
     end
 
-    def incr!
-        @pc += 1
+    def pop_stack_frame
+        @call_stack.pop
     end
 
-    def decr!
-        @pc -= 1
-    end
-
-    def jump_to(label, label_lt)
-        self.set(@label_lt.get(label))
+    def restore_caller
+        prev_state = self.pop_stack_frame
+        @current_file = prev_state[0]
+        @current_instr = prev_state[1]
     end
 end

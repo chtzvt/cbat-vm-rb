@@ -2,7 +2,7 @@
     filename "TEST.BAT"
     entry 0
     ver 0.1
-.labels 
+.labels
     WAZZUP:7
 .instrs
     e "Hello there!"
