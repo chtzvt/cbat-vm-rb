@@ -7,9 +7,11 @@ module Debugger
             when "pos"
                 puts "Current instruction: #{@current_instr}"
             when "d"
-                puts "Instruction dump: "
+                puts "Instruction dump: \n"
+                ix = 0
                 @instructions.map do |i|
-                    p i 
+                    puts " #{ix} | #{p i}" 
+                    ix += 1
                     puts "\n"
                 end
             when "i"
@@ -32,7 +34,7 @@ module Debugger
                 insert_instr(i, addr.to_i)
             when "j"
                 puts "Destination address: "
-                @current_instr = gets.chomp.to_i #possible bug, off by one
+                @current_instr = gets.chomp.to_i - 1
             else 
                 puts "
                     pos | current PC value
