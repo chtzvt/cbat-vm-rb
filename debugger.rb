@@ -64,6 +64,12 @@ module Debugger
                 @var_lt.map do |k,v|
                     puts " #{k} | #{v}" 
                 end
+            when "fdmp"
+                puts "File dump: \n"
+                ix = 0
+                @file_lt.map do |k,v|
+                    puts " #{k} | #{v}" 
+                end
             when "lbc"
                 puts "Label name: "
                 lbname = gets.chomp
@@ -112,6 +118,7 @@ module Debugger
                     fdel | file delete
                     fr   | read file content
                     fw   | write file content
+                    fdmp | dump files
 
                     MISC
                     foutc | Dump program as cbat

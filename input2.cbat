@@ -3,10 +3,11 @@
         entry 0
         ver 0.1
 .labels
-        loop:0
+        good:4
 .instrs
-        e "Statement 1"
-        e "Statement 2"
-        e "Statement 3"
-        bp
-        g loop
+        st NAME,"Charlton"
+        ieq NAME,"Charlton",good
+        e "Goodbye."
+        trm
+        e "Hey, %NAME%!"
+        trm

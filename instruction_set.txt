@@ -13,25 +13,25 @@ st IDENT,VALUE -> set IDENT to VALUE (impl)
 sta IDENT,EXPR -> arithmetic set (won't implement, substitute math instrs below instead)
 stf PATH IDENT -> set variable content from file
 
-## Mathematics
-ad IDENT,VALUE -> Add
-sb IDENT,VALUE -> Subtract
-ml IDENT,VALUE -> Multiply
-dv IDENT,VALUE -> Divide
+## Mathematics (immediate)
+adi IDENT,VALUE -> Add [nop]
+sbi IDENT,VALUE -> Subtract [nop]
+mli IDENT,VALUE -> Multiply [nop]
+dvi IDENT,VALUE -> Divide [nop]
 
 ## Control flow
 g LABEL -> goto (impl)
-c PATH -> call
+c PATH -> call [nop]
 trm -> terminate (impl)
-iex PATH,LABEL -> if exist
-inx PATH,LABEL -> if not exist
-ieq IDENT,VALUE,LABEL -> if equal
-inq IDENT,VALUE,LABEL -> if not equal 
+iex PATH,LABEL -> goto if exist  (impl)
+inx PATH,LABEL -> goto if not exist  (impl)
+ieq IDENT,VALUE,LABEL -> goto if equal (impl)
+inq IDENT,VALUE,LABEL -> goto if not equal (impl)
 * If LABEL is unspecified, the following instruction will be executed in the true case or skipped otherwise
 
 ## Utility
-cls -> clear terminal
-clr INT -> color
+cls -> clear terminal [nop]
+clr INT -> color [nop]
 p INT -> pause, quiet pause if INT = 0 (impl)
 
 Built-in identifiers

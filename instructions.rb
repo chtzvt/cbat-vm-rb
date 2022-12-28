@@ -25,8 +25,30 @@ class InstructionMap
             GotoInstruction.new
         when "p"
             PauseInstruction.new
+        when "ieq"
+            IfEqualInstruction.new
+        when "inq"
+            IfNotEqualInstruction.new
+        when "iex"
+            IfFileExistsInstruction.new
+        when "inx"
+            IfNotFileExistsInstruction.new
+        when "adi"
+            NopInstruction.new
+        when "sbi"
+            NopInstruction.new
+        when "mli"
+            NopInstruction.new
+        when "dvi"
+            NopInstruction.new
+        when "cls"
+            NopInstruction.new
+        when "clr"
+            NopInstruction.new
+        when "c"
+            NopInstruction.new
         else 
-            IllegalInstruction.new
+            NopInstruction.new
         end
     end
 end
@@ -155,7 +177,7 @@ class AppendFileInstruction
     include Executable
 
     def exec
-        @file_lt.append_file(@args[1], @args[0].batch_interpolate_string(@var_lt))
+        @file_lt.append(@args[1], @args[0].batch_interpolate_string(@var_lt))
     end
 
     def to_batch
@@ -169,18 +191,101 @@ end
 
 class IfEqualInstruction
     include Executable
-    attr_accessor :target
 
     def exec
-        @raw_str.batch_interpolate_string(@var_lt)
+        @ec = :jump
+        target
     end
 
+    def target 
+        if @var_lt.get(@args[0]) == @args[1].batch_interpolate_string(@var_lt)
+            @label_lt.get(@args[2]).to_i
+        else 
+            nil
+        end
+    end 
+
     def to_batch
-        "if \"%#{@raw_args[0]}%\" EQU \"#{@raw_args[1]}\" #{@raw_args[2]}"
+        "if \"%#{@raw_args[0]}%\" EQU \"#{@raw_args[1]}\" goto #{@raw_args[2]}"
     end
 
     def to_cbat
         "ieq \"#{@raw_args[0]}\",\"#{@raw_args[1]}\",#{@raw_args[2]}"
+    end
+end
+
+class IfNotEqualInstruction
+    include Executable
+
+    def exec
+        @ec = :jump
+        target
+    end
+
+    def target 
+        if @var_lt.get(@args[0]) != @args[1].batch_interpolate_string(@var_lt)
+            @label_lt.get(@args[2]).to_i
+        else 
+            nil
+        end
+    end 
+
+    def to_batch
+        "if \"%#{@raw_args[0]}%\" NOT EQU \"#{@raw_args[1]}\" goto #{@raw_args[2]}"
+    end
+
+    def to_cbat
+        "inq \"#{@raw_args[0]}\",\"#{@raw_args[1]}\",#{@raw_args[2]}"
+    end
+end
+
+class IfFileExistsInstruction
+    include Executable
+
+    def exec
+        @ec = :jump
+        target
+    end
+
+    def target 
+        if @file_lt.file_exists?(args[0].batch_interpolate_string(@var_lt))
+            @label_lt.get(@args[1]).to_i
+        else 
+            nil
+        end
+    end 
+
+    def to_batch
+        "if EXIST \"%#{@raw_args[0]}%\" goto #{@raw_args[1]}"
+    end
+
+    def to_cbat
+        "iex \"#{@raw_args[0]}\",#{@raw_args[1]}"
+    end
+end
+
+class IfNotFileExistsInstruction
+    include Executable
+
+    def exec
+        @ec = :jump
+        target
+    end
+
+    def target 
+        unless @file_lt.file_exists?(args[0].batch_interpolate_string(@var_lt))
+            @label_lt.get(@args[1]).to_i
+        else 
+            nil
+        end
+    end 
+
+    def to_batch
+        "if NOT EXIST \"%#{@raw_args[0]}%\" goto #{@raw_args[1]}"
+    end
+
+    def to_cbat
+        "inx \"#{@raw_args[0]}\",#{@raw_args[1]}"
     end
 end
 
@@ -189,7 +294,7 @@ class GotoInstruction
 
     def exec
         @ec = :jump
-        @label_lt.get(@args[0])
+        @label_lt.get(target)
     end
 
     def target 

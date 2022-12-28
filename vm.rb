@@ -36,10 +36,17 @@ class Program
                 debugger
                 @exec_ctx = :running
                 puts ">>> Debugger exits. Bye!"
+            when IfEqualInstruction, IfNotEqualInstruction, IfFileExistsInstruction, IfNotFileExistsInstruction
+                @current_instr = @instructions[@current_instr].target.nil? ? @current_instr : @instructions[@current_instr].target
+                @exec_ctx = :running
             end
 
-            @instructions[@current_instr].exec() unless @instructions[@current_instr].nil?
 
+            @instructions[@current_instr].exec() unless @instructions[@current_instr].nil?
+            # Likely cause of bugs
+            # Not every instruction advances the program counter
+            # It's probably better to handle this in an else clause of the above case, 
+            # and individually for special case instrs that do increment the pc.
             @current_instr += 1
         end 
     end
