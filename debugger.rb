@@ -4,7 +4,7 @@ module Debugger
         while (input = gets.chomp) != 'q'
             cmd = input.split(' ', 2)
             case cmd[0]
-            when "pos"
+            when "pc"
                 puts "Current instruction: #{@current_instr}"
             when "d"
                 puts "Internal instruction dump: \n"
@@ -20,7 +20,7 @@ module Debugger
                     puts " #{ix} #{ix == @current_instr ? "@" : "|"} #{i.to_cbat}" 
                     ix += 1
                 end
-            when "i"
+            when "insi"
                 puts "Instruction: "
                 inp = gets.chomp
 
@@ -41,6 +41,43 @@ module Debugger
             when "j"
                 puts "Destination address: "
                 @current_instr = gets.chomp.to_i
+            when "deli"
+                puts "Delete target address: "
+                @instructions.delete_at(gets.chomp.to_i)
+            when "vset"
+                puts "Variable name: "
+                vname = gets.chomp
+
+                puts "Value: "
+                vval = gets.chomp
+                @var_lt.store(vname, vval)
+            when "vdel"
+                puts "Variable name: "
+                vname = gets.chomp
+                @var_lt.delete(vname)
+            when "vdmp"
+                puts "Variable dump: \n"
+                ix = 0
+                @var_lt.map do |k,v|
+                    puts " #{k} | #{v}" 
+                end
+            when "lbc"
+                puts "Label name: "
+                lbname = gets.chomp
+
+                puts "Destination: "
+                lbdest = gets.chomp
+                @label_lt.store(lbname, lbdest.to_i)
+            when "lbd"
+                puts "Label name: "
+                lbname = gets.chomp
+                @label_lt.delete(lbname)
+            when "lbdmp"
+                puts "Label dump: \n"
+                ix = 0
+                @label_lt.map do |k,v|
+                    puts " #{k} | #{v}" 
+                end
             when "foutc"
                 puts self.to_cbat_file
             when "foutb"
@@ -48,25 +85,28 @@ module Debugger
             else 
                 puts "
                     PROGRAM COUNTER
-                    pos  | current PC value
+                    pc   | current PC value
                     j    | Jump to address
 
                     EXECUTION
                     d    | dump instructions (internal repr)
                     dc   | dump instructions (cbat repr)
-                    i    | Insert instruction at address
+                    insi | Insert instruction at address
                     deli | delete instruction at address
                     
                     VARIABLES
-                    sv   | set variable
+                    vset | set variable
+                    vdel | delete variable
+                    vdmp | dump variables 
 
                     LABELS
-                    lc   | create label
-                    ld   | delete label
+                    lbc  | create label
+                    lbd  | delete label
+                    lbdmp| dump labels
                     
                     FILES
                     fcp  | file copy
-                    fd   | file delete
+                    fdel | file delete
                     fr   | read file content
                     fw   | write file content
 

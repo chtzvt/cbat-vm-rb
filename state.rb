@@ -13,6 +13,10 @@ module LookupTable
         @lt.fetch(name.downcase.to_sym, "undefined")
     end
 
+    def delete(name)
+        @lt.delete(name.downcase.to_sym)
+    end
+
     def map(&block)
         @lt.map &block
     end
