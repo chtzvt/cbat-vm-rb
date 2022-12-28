@@ -64,7 +64,10 @@ module CBATLoader
 
         i = instr_map.lookup(kv[0])
 
-        if i.class == IllegalInstruction
+        case i
+        when LabelInstruction
+            @label_lt.store(kv[1], @instructions.length)
+        when IllegalInstruction
             raise "cbat: illegal instruction `#{kv[0]}`"
         end 
 

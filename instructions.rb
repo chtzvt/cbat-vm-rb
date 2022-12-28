@@ -5,6 +5,8 @@ class InstructionMap
 
     def lookup(op)
         case op
+        when "l"
+            LabelInstruction.new
         when "e"
             EchoInstruction.new
         when "stp"
@@ -342,6 +344,22 @@ class BreakpointInstruction
     end
 end
 
+class LabelInstruction
+    include Executable
+
+    def exec
+        ""
+    end
+
+    def to_cbat
+        "l #{@raw_args[0]}"
+    end
+
+    def to_batch
+        ":#{@raw_args[0]}"
+    end
+end   
+
 class NopInstruction
     include Executable
 
@@ -350,13 +368,13 @@ class NopInstruction
     end
 
     def to_cbat
-        "nop"
+        "l "
     end
 
     def to_batch
         "::cbat:nop"
     end
-end   
+end  
 
 class IllegalInstruction
     include Executable

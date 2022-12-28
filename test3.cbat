@@ -1,0 +1,10 @@
+.header
+        filename "TEST.BAT"
+        entry 0
+        ver 0.1
+.labels
+        good:4
+.instrs
+        l test
+        e "Loopy!"
+        g test
