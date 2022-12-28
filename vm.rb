@@ -32,7 +32,9 @@ class Program
                 @exec_ctx = :running
             when BreakpointInstruction
                 @exec_ctx = :breakpoint
+                prev_pc = @current_instr
                 debugger
+                @current_instr -= 1 if @current_instr != prev_pc
                 @exec_ctx = :running
                 puts ">>> Debugger exits. Bye!"
             end
