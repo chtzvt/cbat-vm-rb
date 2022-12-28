@@ -28,6 +28,8 @@ class Program
             case @instructions[@current_instr]
             when TerminateInstruction
                 @exec_ctx = :terminated
+            when LabelInstruction
+                @label_lt.store(@instructions[@current_instr].args[0], @current_instr)
             when GotoInstruction
                 @current_instr = @instructions[@current_instr].target
                 @exec_ctx = :running
