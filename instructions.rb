@@ -296,11 +296,11 @@ class GotoInstruction
 
     def exec
         @ec = :jump
-        @label_lt.get(target)
+        target
     end
 
     def target 
-        @args[0].to_i
+        @label_lt.get(@args[0]).to_i
     end 
 
     def to_batch

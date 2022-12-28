@@ -5,6 +5,13 @@
 .labels
         good:4
 .instrs
-        l test
+        l test1
         e "Loopy!"
-        g test
+        g test2
+        l test3
+        e "Sneezing!"
+        bp
+        g test1
+        l test2
+        e "Sneaky!"
+        g test3
