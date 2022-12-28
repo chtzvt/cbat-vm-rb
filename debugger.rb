@@ -25,7 +25,7 @@ module Debugger
                 inp = gets.chomp
 
                 puts "Target address: "
-                addr = gets.chomp
+                addr = gets.chomp.to_i
 
                 ins = inp.split(' ', 2)
                 instr_map = InstructionMap.instance
@@ -37,13 +37,16 @@ module Debugger
                 end 
         
                 i.init(ins[1], @var_lt, @label_lt, @file_lt, @exec_ctx)
-                insert_instr(i, addr.to_i)
+                insert_instr(i, addr)
+                @current_instr += 1 if addr <= @current_instr
             when "j"
                 puts "Destination address: "
                 @current_instr = gets.chomp.to_i
             when "deli"
                 puts "Delete target address: "
-                @instructions.delete_at(gets.chomp.to_i)
+                target = gets.chomp.to_i 
+                @current_instr -= 1 if target <= @current_instr
+                @instructions.delete_at(target)
             when "vset"
                 puts "Variable name: "
                 vname = gets.chomp

@@ -22,7 +22,8 @@ class Program
         @current_instr = @entry_point
 
         while @exec_ctx == :running 
-            @instructions[@current_instr].exec()
+
+            @exec_ctx = :eof if @instructions[@current_instr].nil?
 
             case @instructions[@current_instr]
             when TerminateInstruction
@@ -32,16 +33,12 @@ class Program
                 @exec_ctx = :running
             when BreakpointInstruction
                 @exec_ctx = :breakpoint
-                prev_pc = @current_instr
                 debugger
-                @current_instr -= 1 if @current_instr != prev_pc
                 @exec_ctx = :running
                 puts ">>> Debugger exits. Bye!"
             end
 
-            if @current_instr >= @instructions.length - 1
-                @exec_ctx = :eof 
-            end
+            @instructions[@current_instr].exec() unless @instructions[@current_instr].nil?
 
             @current_instr += 1
         end 

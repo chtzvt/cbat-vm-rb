@@ -1,0 +1,12 @@
+.header
+        filename "TEST.BAT"
+        entry 0
+        ver 0.1
+.labels
+        loop:0
+.instrs
+        e "Statement 1"
+        e "Statement 2"
+        e "Statement 3"
+        bp
+        g loop
