@@ -52,14 +52,22 @@ end
 class FileLookupTable
     include LookupTable
 
-    # Case-insensitive match on filenames presents a serious problem,
-    # because e.g. Charlton.txt and chArLton.txt are equivalent for the 
-    # same query. Propose hashing the filename as a key and mapping to 
-    # an array of [original filename, contents]
+    def store(name, value)
+        @lt.store(name.to_sym, value)
+    end
+
+    def get(name)
+        @lt.fetch(name.to_sym, "undefined")
+    end
+
+    def delete(name)
+        @lt.delete(name.to_sym)
+    end
+
     def append(name, content)        
         orig_content = ""
         orig_content = self.get(name) if self.file_exists?(name) 
-        self.store(name, orig_content + content + '\n')
+        self.store(name, orig_content + content + "\n")
     end
 
     def file_exists?(name)
@@ -77,6 +85,11 @@ class FileLookupTable
 
     def create(name)
         store(name, "")
+    end
+
+    def read(name)
+        content = get(name) 
+        content != "undefined" ? content : "\n"
     end
 
     def overwrite(name, content)

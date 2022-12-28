@@ -1,0 +1,22 @@
+.header
+        filename "DMS-LOGIN.BAT"
+        entry 0
+        ver 0.1
+.labels
+.instrs
+        af "Lol","TEST2.TXT"
+        af "Lol","TEST2.TXT"
+        inx "TEST.TXT"
+        st TEST,"Test does not exist!"
+        iex "TEST.TXT"
+        st TEST,"Test does exist."
+        inx "TEST.TXT",demo
+        l stat
+        e "Status: %TEST%"
+        t "TEST2.TXT"
+        trm
+        l demo
+        e "Boinkers!"
+        iex "TEST.TXT",stat
+        e "yeet"
+        g stat

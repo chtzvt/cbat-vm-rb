@@ -1,7 +1,9 @@
 module Debugger
-    def debugger 
+    attr_accessor :debug_step, :exec_ctx
+
+    def debugger_repl
         puts ">>> Debugger enters. Hello!"
-        while (input = gets.chomp) != 'q'
+        while (input = STDIN.gets.chomp) != 'q'
             cmd = input.split(' ', 2)
             case cmd[0]
             when "pc"
@@ -22,10 +24,10 @@ module Debugger
                 end
             when "insi"
                 puts "Instruction: "
-                inp = gets.chomp
+                inp = STDIN.gets.chomp
 
                 puts "Target address: "
-                addr = gets.chomp.to_i
+                addr = STDIN.gets.chomp.to_i
 
                 ins = inp.split(' ', 2)
                 instr_map = InstructionMap.instance
@@ -41,22 +43,22 @@ module Debugger
                 @current_instr += 1 if addr <= @current_instr
             when "j"
                 puts "Destination address: "
-                @current_instr = gets.chomp.to_i
+                @current_instr = STDIN.gets.chomp.to_i
             when "deli"
                 puts "Delete target address: "
-                target = gets.chomp.to_i 
+                target = STDIN.gets.chomp.to_i 
                 @current_instr -= 1 if target <= @current_instr
                 @instructions.delete_at(target)
             when "vset"
                 puts "Variable name: "
-                vname = gets.chomp
+                vname = STDIN.gets.chomp
 
                 puts "Value: "
-                vval = gets.chomp
+                vval = STDIN.gets.chomp
                 @var_lt.store(vname, vval)
             when "vdel"
                 puts "Variable name: "
-                vname = gets.chomp
+                vname = STDIN.gets.chomp
                 @var_lt.delete(vname)
             when "vdmp"
                 puts "Variable dump: \n"
@@ -72,14 +74,14 @@ module Debugger
                 end
             when "lbc"
                 puts "Label name: "
-                lbname = gets.chomp
+                lbname = STDIN.gets.chomp
 
                 puts "Destination: "
-                lbdest = gets.chomp
+                lbdest = STDIN.gets.chomp
                 @label_lt.store(lbname, lbdest.to_i)
             when "lbd"
                 puts "Label name: "
-                lbname = gets.chomp
+                lbname = STDIN.gets.chomp
                 @label_lt.delete(lbname)
             when "lbdmp"
                 puts "Label dump: \n"
@@ -91,6 +93,15 @@ module Debugger
                 puts self.to_cbat_file
             when "foutb"
                 puts self.dump_batch
+            when "step"
+                @debug_step ^= true
+                puts "step log #{@debug_step ? "enabled" : "disabled"}"
+            when "dlog"
+                @debug_log_enable ^= true
+                puts "debug log #{@debug_log_enable ? "enabled" : "disabled"}"
+            when "trm"
+                @exec_ctx = :terminated
+                break 
             else 
                 puts "
                     PROGRAM COUNTER
@@ -102,7 +113,7 @@ module Debugger
                     dc   | dump instructions (cbat repr)
                     insi | Insert instruction at address
                     deli | delete instruction at address
-                    
+
                     VARIABLES
                     vset | set variable
                     vdel | delete variable
@@ -123,11 +134,20 @@ module Debugger
                     MISC
                     foutc | Dump program as cbat
                     foutb | Dump program as batch
+                    trm   | Terminate execution
+                    step | toggle step log
+                    dlog | toggle step log
                 "
             end
-
         @exec_ctx = :running 
         end
+        puts ">>> Debugger exits. Bye!"
+    end
+
+    def debug 
+        @exec_ctx = :breakpoint
+        debugger_repl
+        @exec_ctx = :running unless @exec_ctx == :terminated
     end
 
     def insert_instr(instruction, address)

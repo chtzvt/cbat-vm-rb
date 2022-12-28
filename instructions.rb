@@ -44,9 +44,11 @@ class InstructionMap
         when "dvi"
             NopInstruction.new
         when "cls"
-            NopInstruction.new
+            ClearScreenInstruction.new
         when "clr"
             NopInstruction.new
+        when "t"
+            TypeFileInstruction.new
         when "c"
             NopInstruction.new
         else 
@@ -56,15 +58,16 @@ class InstructionMap
 end
 
 module Executable
-    attr_accessor :args, :raw_args, :var_lt, :label_lt, :file_lt, :ec
+    attr_accessor :args, :raw_args, :var_lt, :label_lt, :file_lt, :ec, :debug_enable
 
-    def init(raw_str, var_lt, label_lt, file_lt, ec)
+    def init(raw_str, var_lt, label_lt, file_lt, ec, debug_enable)
         @args = raw_str.batch_get_instr_args unless raw_str.nil?
         @raw_args = @args.clone.map(&:clone) unless raw_str.nil?
         @var_lt = var_lt
         @label_lt = label_lt
         @file_lt = file_lt 
         @ec = ec
+        @debug_enable = debug_enable
     end
 
     def exec
@@ -77,6 +80,10 @@ module Executable
 
     def to_cbat
         raise "Not implemented!"
+    end
+
+    def op
+        to_cbat.split(' ')[0]
     end
 
     def run(args, var_lt, label_lt, file_lt, pc)
@@ -101,10 +108,27 @@ class EchoInstruction
     end
 end
 
+class ClearScreenInstruction
+    include Executable
+
+    def exec
+        puts "\e[H\e[2J" unless @debug_enable
+    end
+
+    def to_batch
+        "cls"
+    end
+
+    def to_cbat
+        "cls"
+    end
+end
+
 class StoreInstruction
     include Executable
 
     def exec
+        puts "[debug] store #{@args[0]}='#{@args[1]}'" if @debug_enable
         @var_lt.store(@args[0], @args[1])
     end
 
@@ -122,12 +146,13 @@ class SetPromptInstruction
 
     def prompt(msg)
         print(msg.batch_remove_quotes)
-        gets
+        STDIN.gets
     end
 
     def exec
         str = args[1]
         str = "Input: " if args[1].empty?
+        puts "[debug] prompt store #{@args[0]}" if @debug_enable
         @var_lt.store(args[0].to_sym, prompt(str).chomp)
     end
 
@@ -145,7 +170,7 @@ class PauseInstruction
 
     def prompt(msg)
         puts msg.batch_remove_quotes unless msg.empty?
-        gets
+        STDIN.gets
     end
 
     def exec
@@ -179,6 +204,7 @@ class AppendFileInstruction
     include Executable
 
     def exec
+        puts "[debug] file append #{@args[1]} '#{@args[0].batch_interpolate_string(@var_lt)}'" if @debug_enable
         @file_lt.append(@args[1], @args[0].batch_interpolate_string(@var_lt))
     end
 
@@ -191,19 +217,48 @@ class AppendFileInstruction
     end
 end
 
+class TypeFileInstruction
+    include Executable
+
+    def exec
+        puts "[debug] file type #{@args[1]} '#{@args[0].batch_interpolate_string(@var_lt)}'" if @debug_enable
+        print @file_lt.read(@args[0].batch_interpolate_string(@var_lt))
+    end
+
+    def to_batch
+        "type \"#{@raw_args[0]}\""
+    end
+
+    def to_cbat
+        "t \"#{@raw_args[0]}\""
+    end
+end
+
 class IfEqualInstruction
     include Executable
 
     def exec
         @ec = :jump
-        target
     end
 
-    def target 
+    def target(ci)
+        puts "[debug] if equal compare '#{@var_lt.get(@args[0])}' to '#{@args[1].batch_interpolate_string(@var_lt)}'" if @debug_enable
         if @var_lt.get(@args[0]) == @args[1].batch_interpolate_string(@var_lt)
-            @label_lt.get(@args[2]).to_i
+            if @args[1].nil?
+                puts "[debug] \tif equal comparison succeeds, advancing" if @debug_enable
+                ci + 1
+            else 
+                puts "[debug] \tif equal comparison succeeds, jumping to #{@args[2]} (#{@label_lt.get(@args[2]).to_i}" if @debug_enable
+                @label_lt.get(@args[2]).to_i
+            end
         else 
-            nil
+            if @args[1].nil?
+                puts "[debug] \tif equal comparison failed without a label, advancing" if @debug_enable
+                ci + 2
+            else 
+                puts "[debug] \tif equal comparison failed with label, advancing" if @debug_enable
+                ci + 1
+            end
         end
     end 
 
@@ -221,14 +276,26 @@ class IfNotEqualInstruction
 
     def exec
         @ec = :jump
-        target
     end
 
-    def target 
+    def target(ci)
+        puts "[debug] if not equal compare '#{@var_lt.get(@args[0])}' to '#{@args[1].batch_interpolate_string(@var_lt)}'" if @debug_enable
         if @var_lt.get(@args[0]) != @args[1].batch_interpolate_string(@var_lt)
-            @label_lt.get(@args[2]).to_i
+            if @args[1].nil?
+                puts "[debug] \tif not equal comparison succeeds, advancing" if @debug_enable
+                ci + 1
+            else 
+                puts "[debug] \tif not equal comparison succeeds, jumping to #{@args[2]} (#{@label_lt.get(@args[2]).to_i}" if @debug_enable
+                @label_lt.get(@args[2]).to_i
+            end
         else 
-            nil
+            if @args[1].nil?
+                puts "[debug] \tif not equal comparison failed without a label, advancing" if @debug_enable
+                ci + 2
+            else 
+                puts "[debug] \tif not equal comparison failed with label, advancing" if @debug_enable
+                ci + 1
+            end
         end
     end 
 
@@ -246,14 +313,26 @@ class IfFileExistsInstruction
 
     def exec
         @ec = :jump
-        target
     end
 
-    def target 
+    def target(ci)
+        puts "[debug] if file exists '#{args[0].batch_interpolate_string(@var_lt)}'" if @debug_enable
         if @file_lt.file_exists?(args[0].batch_interpolate_string(@var_lt))
-            @label_lt.get(@args[1]).to_i
+            if @args[1].nil?
+                puts "[debug] \tif file exists succeeds, advancing" if @debug_enable
+                ci + 1
+            else 
+                puts "[debug] \tif file exists succeeds, jumping to #{@args[1]} (#{@label_lt.get(@args[1]).to_i}" if @debug_enable
+                @label_lt.get(@args[1]).to_i
+            end
         else 
-            nil
+            if @args[1].nil?
+                puts "[debug] \tif file exists failed without a label, advancing" if @debug_enable
+                ci + 2
+            else 
+                puts "[debug] \tif file exists failed with label, advancing" if @debug_enable
+                ci + 1
+            end
         end
     end 
 
@@ -271,14 +350,26 @@ class IfNotFileExistsInstruction
 
     def exec
         @ec = :jump
-        target
     end
 
-    def target 
+    def target(ci)
+        puts "[debug] if file not exists '#{args[0].batch_interpolate_string(@var_lt)}'" if @debug_enable
         unless @file_lt.file_exists?(args[0].batch_interpolate_string(@var_lt))
-            @label_lt.get(@args[1]).to_i
+            if @args[1].nil?
+                puts "[debug] \tif file not exists succeeds, advancing" if @debug_enable
+                ci + 1
+            else 
+                puts "[debug] \tif file not exists succeeds, jumping to #{@args[1]} (#{@label_lt.get(@args[1]).to_i}" if @debug_enable
+                @label_lt.get(@args[1]).to_i
+            end
         else 
-            nil
+            if @args[1].nil?
+                puts "[debug] \tif file not exists failed without a label, advancing" if @debug_enable
+                ci + 2
+            else 
+                puts "[debug] \tif file not exists failed with label, advancing" if @debug_enable
+                ci + 1
+            end
         end
     end 
 
@@ -299,8 +390,16 @@ class GotoInstruction
         target
     end
 
-    def target 
-        @label_lt.get(@args[0]).to_i
+    def target(cur)
+        case @args[0].batch_interpolate_string(@var_lt).downcase.to_sym
+        when :cbat_next
+            cur + 1
+        when :cbat_prev
+            cur - 1
+        else
+            puts "[debug] goto target #{@args[0]}@#{@label_lt.get(@args[0]).to_i}" if @debug_enable
+            @label_lt.get(@args[0]).to_i
+        end
     end 
 
     def to_batch
@@ -316,6 +415,7 @@ class TerminateInstruction
     include Executable
 
     def exec
+        puts "[debug] terminate" if @debug_enable
         @ec = :terminated
     end
 
@@ -348,6 +448,7 @@ class LabelInstruction
     include Executable
 
     def exec
+        puts "[debug] label def: #{@args[0]}" if @debug_enable
         ""
     end
 
@@ -364,6 +465,7 @@ class NopInstruction
     include Executable
 
     def exec
+        puts "[debug] no-op" if @debug_enable
         ""
     end
 
@@ -380,6 +482,7 @@ class IllegalInstruction
     include Executable
 
     def exec
+        puts "[debug] illegal instr" if @debug_enable
         ""
     end
 

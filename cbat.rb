@@ -7,7 +7,7 @@ module CBATLoader
     attr_accessor :instructions
 
     attr_accessor :var_lt, :label_lt, :file_lt
-    attr_accessor :exec_ctx
+    attr_accessor :exec_ctx, :debug_log_enable
 
     def open(path)
         current_section = :unknown
@@ -50,6 +50,8 @@ module CBATLoader
             @entry_point = kv[1].to_i
         when "ver"
             @version = kv[1]
+        when "debug"
+            @debug_log_enable = true
         end
     end 
 
@@ -71,7 +73,7 @@ module CBATLoader
             raise "cbat: illegal instruction `#{kv[0]}`"
         end 
 
-        i.init(kv[1], @var_lt, @label_lt, @file_lt, @exec_ctx)
+        i.init(kv[1], @var_lt, @label_lt, @file_lt, @exec_ctx, @debug_log_enable)
         @instructions.append(i)
     end
 

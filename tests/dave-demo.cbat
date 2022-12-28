@@ -1,0 +1,100 @@
+.header
+        filename "DAVE-DEMO.BAT"
+        entry 0
+        ver 0.1
+.labels
+.instrs
+        e              Thank you for chosing Batch Generation Computing's 
+        e ""
+        e              Xtrodinary Differential Output System v1.0 (X-DOS)
+        e ""
+        p
+        cls
+        e                            Created By:
+        e ""
+        e                            David Dodge
+        e ""
+        p
+        cls
+        e                         Including Code By:
+        e ""
+        e          William from www.higginsbatch.webs.com
+        e ""
+        e      ScrewTheLotOfYou from www.screwthelotofyou.webs.com
+        e ""
+        e        abs1296 from www.sites.google.com/site/absppt
+        e ""
+        e                        schoolhacks
+        e ""
+        p
+        cls
+        e "Welcome to the world of command prompt, somthing that is on every "
+        e "windows computer, but many people do not take advantage of this "
+        e "powerful little program on windows.Since X-DOS runs in"
+        e "command prompt, here is a tuturial of how to use the program. "
+        e ""
+        p
+        cls
+        e If you you are reading this, you already know what to do if
+        e it says "press any key to continue". If the computer appears to 
+        e just be sitting there press any key to continue with that to.
+        e Note that if that does not do anything do not do anything as the
+        e computer is thinking.
+        p
+        cls
+        e If the program needs you to input something, input the option
+        e you want ( either a number or yes/no) and press the enter key.
+        e options have to be entered in lowercase.
+        p
+        cls
+        e The program has you enter a username and password. To find the 
+        e avalible user accounts please refer to the instructions that
+        e came with the program.
+        p
+        cls
+        bp
+        e To use the message service of X-DOS, Follow the instructions
+        p
+        cls
+        e 1) goto the start menu and right click my computer
+        e ""
+        e 2) click manage, it will bring up a new window
+        e ""
+        e 3) double click "services and applications"
+        e ""
+        e 4) double click "services"
+        e ""
+        e 5) The services are in alphibetical order, look for "messanger"
+        e ""
+        e 6) If it says "automatic" next to it, then you don't have to do anything
+        e ""
+        e 7) If it says "disabled" then right click it, click properties, and select
+        e    "automatic" in the drop down box. Click apply, then let it start up.
+        e ""
+        p
+        cls
+        e To use the movie and internet features, you must have internet access.
+        p
+        cls
+        e                             File Setup
+        e ""
+        e Right click the BG-Computing c folder and click copy. Then 
+        e goto where you want the folder, right click, and click paste.
+        p
+        cls
+        e Open the BG computing folder and drag and drop the tree icon 
+        e onto your desktop.
+        p
+        cls
+        e Do Not move any other files
+        e ""
+        p
+        cls
+        e The help icon will open help and the setup icon will open this.
+        e The tree icon opens the program.
+        p
+        cls
+        e Continuing will open the help file. I hope you enjoy X-DOS v1.0
+        p
+        trm
+        

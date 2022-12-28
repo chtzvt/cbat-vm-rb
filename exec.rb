@@ -1,5 +1,5 @@
 require './vm'
 
 program = Program.new
-program.open("test3.cbat")
+program.open(ARGV[0])
 program.run

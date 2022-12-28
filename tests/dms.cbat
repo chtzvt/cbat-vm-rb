@@ -12,10 +12,10 @@
         exit:34
         register:36
 .instrs
-        iex "C:\DSOFT\DMS\SYSTEM\MODE\CLOUDMODE-ENABLED.txt",nop1
-        iex "%C:\DSOFT\DMS\SYSTEM\MODE\VAULT\SYSTEMUN.txt",skipsetsysundefault
+        iex "C:\DSOFT\DMS\SYSTEM\MODE\CLOUDMODE-ENABLED.txt"
+        ine "%C:\DSOFT\DMS\SYSTEM\MODE\VAULT\SYSTEMUN.txt"
         st SYSTEMUN,"system1"
-        ine "%C:\DSOFT\DMS\SYSTEM\MODE\VAULT\SYSTEMUN.txt",SKIPSYSUNSET
+        iex "%C:\DSOFT\DMS\SYSTEM\MODE\VAULT\SYSTEMUN.txt"
         stf SYSTEMUN,"%C:\DSOFT\DMS\SYSTEM\MODE\VAULT\SYSTEMUN.txt"
         clr 17
         af "Charlton","C:\DSOFT\DMS\USERS\Charlton.txt"
