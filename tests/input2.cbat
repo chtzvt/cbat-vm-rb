@@ -1,7 +1,11 @@
+.files
+        "TEST.TXT" "this is a test file\nhello world\nend"
+        "C:\TEST.BAT" "e \"Hello, %NAME%!\"\ntrm"
 .header
         filename "TEST.BAT"
         entry 0
         ver 0.1
+        debug
 .labels
         good:4
 .instrs

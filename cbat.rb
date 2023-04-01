@@ -17,6 +17,7 @@ class CBATLoader
         current_section = :unknown
 
         hit_header = false
+        hit_file = false
 
         File.open(path).each_line do |line|
             line = line.chomp.strip
@@ -24,6 +25,9 @@ class CBATLoader
             case line
             when ".global"
                 current_section = :global
+                next
+            when ".files"
+                current_section = :files
                 next
             when ".header"
                 if hit_header
@@ -48,6 +52,8 @@ class CBATLoader
             case current_section 
             when :global
                 read_global_field(line)
+            when :files
+                read_files_field(line)
             when :header 
                 read_header_field(line)
             when :labels 
@@ -79,6 +85,11 @@ class CBATLoader
         when "entry"
             @global_entry = kv[1]
         end
+    end 
+
+    def read_files_field(field)
+        kv = field.split(' ')
+        @file_lt.store(kv[0], kv[1..])
     end 
 
     def read_header_field(field)
