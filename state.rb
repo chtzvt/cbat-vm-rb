@@ -133,29 +133,3 @@ class SubroutineLookupTable
         ep
     end
 end 
-
-class ExecutionContext
-    attr_accessor :call_stack, :current_file, :current_instr
-
-    def initialize()
-        @call_stack = []
-    end
-
-    def call(sub)
-
-    end 
-
-    def push_stack_frame(filename, instr_addr)
-        @call_stack << [filename, instr_addr]
-    end
-
-    def pop_stack_frame
-        @call_stack.pop
-    end
-
-    def restore_caller
-        prev_state = self.pop_stack_frame
-        @current_file = prev_state[0]
-        @current_instr = prev_state[1]
-    end
-end
