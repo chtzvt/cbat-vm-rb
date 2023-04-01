@@ -21,6 +21,14 @@ module LookupTable
         @lt.map &block
     end
 
+    def keys 
+        @lt.keys 
+    end
+
+    def length 
+        @lt.length 
+    end
+
     def to_s 
         @lt.to_s 
     end
@@ -103,6 +111,27 @@ end
 
 class SubroutineLookupTable
     include LookupTable
+
+    def store(name, value)
+        name = "MAIN" if name.empty? or name.nil?
+        @lt.store(name.downcase.delete('"').to_sym, value)
+    end
+
+    def get(name)
+        @lt.fetch(name.downcase.delete('"').to_sym, nil)
+    end
+
+    def default
+        raise "No programs loaded!" unless @lt.any?
+        @lt.first[1]
+    end
+
+    def entry_point(global_entry)
+        ep = get(global_entry) unless global_entry.nil?
+        ep = get("MAIN") if ep.nil?
+        ep = default() if ep.nil?
+        ep
+    end
 end 
 
 class ExecutionContext

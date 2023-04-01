@@ -50,7 +50,7 @@ class InstructionMap
         when "t"
             TypeFileInstruction.new
         when "c"
-            NopInstruction.new
+            CallInstruction.new
         else 
             NopInstruction.new
         end
@@ -408,6 +408,28 @@ class GotoInstruction
 
     def to_cbat
         "g #{@raw_args[0]}"
+    end
+end
+
+class CallInstruction
+    include Executable
+
+    def exec
+        @ec = :subroutine
+        target
+    end
+
+    def target
+        puts "[debug] call target #{@args[0]}@#{@label_lt.get(@args[0]).to_i}" if @debug_enable
+        @args[0].batch_interpolate_string(@subr_lt)
+    end 
+
+    def to_batch
+        "call #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "c #{@raw_args[0]}"
     end
 end
 

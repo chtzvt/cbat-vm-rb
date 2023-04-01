@@ -1,0 +1,21 @@
+.global 
+        entry "TEST1.BAT"
+.header
+        filename "TEST1.BAT"
+        entry 0
+        ver 0.1
+.instrs
+        st NAME,"Charlton"
+        ieq NAME,"Charlton",good
+        e "Goodbye."
+        trm
+        l good
+        c "TEST2.BAT"
+        trm
+.header
+        filename "TEST2.BAT"
+        entry 0
+        ver 0.1
+.instrs
+        e "Hey, %NAME%!"
+        trm
