@@ -69,6 +69,10 @@ Note: If LABEL is unspecified, the instruction immediately following will be exe
 | `.labels` | Program file label table | Yes |
 | `.instrs` | Instructions | No |
 
+### Comments
+
+Comments are denoted by a `;` character. Comments must be placed on their own line and may appear anywhere in the file.
+
 ### `.global` Section
 
 | Key | Description | Optional |
@@ -151,61 +155,24 @@ Note: If LABEL is unspecified, the instruction immediately following will be exe
 | `dlog` | toggle step log |
 
 
+## Example
 
-af "Username: ^%DESUN%","C:\DSOFT\DMS\USERS\USERDATA\ARC\%ARC%.dat"
+```batchfile
+TEST.BAT
 
-:systemlog
-stf CSYSPASS,"C:\DSOFT\DMS\ADMINTOOLS\SYSPASSWD.txt"
-stp SYSTEMPASSWD,"Password:"
-ieq CSYSPASS,SYSTEMPASSWD,systemcall
-e "invalid."
-p
-g DMSLOGIN
+echo "Hello there!"
+echo "Welcome to the test program."
+set /p NAME=Please enter your name:
+echo %NAME% >>"USERS.TXT"
+if %NAME% EQU "Charlton" goto WAZZUP
+echo "Goodbye, %NAME%"
+exit 
 
-:GOODARC
-clr
-e "Your credentials are:"
-e ""
-t "C:\DSOFT\DMS\USERS\USERDATA\ARC\%ARC%.dat"
-e "Please, store these credentials in a safe place!"
-e "Press any key to return to login..."
-p 0
-g DMSLOGIN
+:WAZZUP 
+echo "Wazzup dad"
+```
 
-## Execution Frame
-
-Header
-    Filename
-    Entrypoint
-    Version
-Label Table
-    Hash label:index
-Variable Table
-    Hash identifier:string
-Read-Only Strings Table
-    Identifier:string 
-Instructions
-    Array of instructions
-
-
-## Normalized IR Format
-
-Input
-
-    TEST.BAT
-
-    echo "Hello there!"
-    echo "Welcome to the test program."
-    set /p NAME=Please enter your name:
-    echo %NAME% >>"USERS.TXT"
-    if %NAME% EQU "Charlton" goto WAZZUP
-    echo "Goodbye, %NAME%"
-    exit 
-
-    :WAZZUP 
-    echo "Wazzup dad"
-
-
+```
 .header
     filename "TEST.BAT"
     entry 0
@@ -221,3 +188,4 @@ Input
     e "Goodbye, %NAME%"
     trm
     e "Wazzup dad"
+```
