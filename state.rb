@@ -61,7 +61,7 @@ class FileLookupTable
     include LookupTable
 
     def store(name, value)
-        @lt.store(name.to_sym, value)
+        @lt.store(name.delete('"').to_sym, value)
     end
 
     def get(name)

@@ -81,7 +81,6 @@ class Program
 
             @current_instr += 1
         end
-        puts @exec_ctx 
     end
 
     def dump_cbat

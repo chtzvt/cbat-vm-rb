@@ -205,7 +205,7 @@ class AppendFileInstruction
 
     def exec
         puts "[debug] file append #{@args[1]} '#{@args[0].batch_interpolate_string(@var_lt)}'" if @debug_enable
-        @file_lt.append(@args[1], @args[0].batch_interpolate_string(@var_lt))
+        @file_lt.append(@args[1].batch_interpolate_string(@var_lt), @args[0].batch_interpolate_string(@var_lt))
     end
 
     def to_batch
@@ -221,7 +221,7 @@ class TypeFileInstruction
     include Executable
 
     def exec
-        puts "[debug] file type #{@args[1]} '#{@args[0].batch_interpolate_string(@var_lt)}'" if @debug_enable
+        puts "[debug] file type '#{@args[0].batch_interpolate_string(@var_lt)}'" if @debug_enable
         print @file_lt.read(@args[0].batch_interpolate_string(@var_lt))
     end
 
@@ -397,8 +397,8 @@ class GotoInstruction
         when :cbat_prev
             cur - 1
         else
-            puts "[debug] goto target #{@args[0]}@#{@label_lt.get(@args[0]).to_i}" if @debug_enable
-            @label_lt.get(@args[0]).to_i
+            puts "[debug] goto target #{@args[0].batch_interpolate_string(@var_lt)}@#{@label_lt.get(@args[0].batch_interpolate_string(@var_lt)).to_i}" if @debug_enable
+            @label_lt.get(@args[0].batch_interpolate_string(@var_lt)).to_i
         end
     end 
 
@@ -437,7 +437,7 @@ class TerminateInstruction
     include Executable
 
     def exec
-        puts "[debug] terminate" if @debug_enable
+        puts "[debug] terminated" if @debug_enable
         @ec = :terminated
     end
 
@@ -516,3 +516,4 @@ class IllegalInstruction
         "::cbat:nop"
     end
 end   
+

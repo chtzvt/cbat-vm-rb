@@ -22,6 +22,8 @@ class CBATLoader
         File.open(path).each_line do |line|
             line = line.chomp.strip
 
+            next if line.start_with?(";")
+
             case line
             when ".global"
                 current_section = :global
@@ -70,6 +72,7 @@ class CBATLoader
 
     def store_prog
         return if @cur_prog.nil?
+        @cur_prog.entry_point = 0 if @cur_prog.entry_point.nil?
         @subr_lt.store(@cur_prog.file_name, @cur_prog.clone)
         @cur_prog = nil
     end
@@ -88,8 +91,8 @@ class CBATLoader
     end 
 
     def read_files_field(field)
-        kv = field.split(' ')
-        @file_lt.store(kv[0], kv[1..])
+        kv = field.split('","')
+        @file_lt.store(kv[0], kv[1..].join(' ').delete_prefix('"').delete_suffix('"').gsub!("\\n","\n"))
     end 
 
     def read_header_field(field)
