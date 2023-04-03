@@ -2,7 +2,6 @@
         filename "DMS-LOGIN.BAT"
         entry 0
         ver 0.1
-        debug
 .labels
         STARTUPMODE:0
         nop1:1
