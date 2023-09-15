@@ -1,0 +1,95 @@
+.header 
+    filename "STACK.BAT"
+.files 
+    "STACK/0","0"
+.instrs
+    l main
+    cls
+    e "Stack!"
+    e ""
+    e "0. Initialize the stack"
+    e "1. Print the current state of the stack"
+    e "2. Push a value onto the stack"
+    e "3. Pop a value off the stack"
+    e "4. Grow the stack"
+    e "5. Shrink the stack"
+    e "6. Peek at the top of the stack"
+    e "7. Exit"
+    e ""
+    stp ARG0,"Select an option:"
+    ieiq ARG0,0,init
+    ieiq ARG0,1,print
+    ieiq ARG0,2,push
+    ieiq ARG0,3,pop
+    ieiq ARG0,4,grow
+    ieiq ARG0,5,shrink
+    ieiq ARG0,6,peek
+    ieiq ARG0,7,exit
+    e "Invalid option :("
+    g main
+    ;
+    ; stack setup
+    ; 
+    l init 
+    ; initialize the stack pointer to 0 if it's undefined
+    ieq SP,"undefined"
+    st SP,0
+    inx "STACK/%SP%"
+    wf "STACK/%SP%","initial value!"
+    g main
+    ;
+    ; print the current state of the stack
+    ;
+    l print 
+    st IDX,"%SP%"
+    e "Stack pointer: %IDX%"
+    e ""
+    e "Stack contents:"
+    l sploop
+    ieiq IDX,0,sploopend
+    stf CONTENTS,"STACK/%IDX%"
+    e "%IDX% | %CONTENTS%"
+    sbi IDX,1
+    g sploop
+    l sploopend
+    p
+    g main
+    ;
+    ;
+    ; push a value onto the stack and increment %SP% by 1
+    ;
+    l push 
+    stp ARG0,"Enter a value to push:"
+    adi SP,1
+    wf "%ARG0%","STACK/%SP%"
+    g main
+    ;
+    ; Pop a value from the top of the stack
+    ; into %RET%, and decrement %SP% by 1
+    ;
+    l pop
+    stf RET,"STACK/%SP%"
+    sbi SP,1
+    g main 
+    ;
+    ; Grow the stack
+    ;
+    l grow
+    adi SP,1
+    g main
+    ;
+    ; Shrink the stack
+    ;
+    l shrink
+    df "STACK/%SP%"
+    sbi SP,1
+    g main
+    ;
+    ; Peek at the top of the stack
+    ;
+    l peek
+    e "Top of stack:"
+    t "STACK/%SP%"
+    e ""
+    p
+    g main

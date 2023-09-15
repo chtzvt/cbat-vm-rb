@@ -43,10 +43,18 @@ Note: If LABEL is unspecified, the instruction immediately following will be exe
 ### Mathematics (immediate)
 | Instruction | Description | Implemented |
 | --- | --- | --- |
-| `adi IDENT,VALUE` | Add | No |
-| `sbi IDENT,VALUE` | Subtract | No |
-| `mli IDENT,VALUE` | Multiply | No |
-| `dvi IDENT,VALUE` | Divide | No |
+| `add DEST IDENT,OP IDENT,OP IDENT` | Add | Yes |
+| `sub DEST IDENT,OP IDENT,OP IDENT` | Subtract | Yes |
+| `mul DEST IDENT,OP IDENT,OP IDENT` | Multiply | Yes |
+| `div DEST IDENT,OP IDENT,OP IDENT` | Divide | Yes |
+
+### Mathematics (immediate)
+| Instruction | Description | Implemented |
+| --- | --- | --- |
+| `adi IDENT,VALUE` | Add | Yes |
+| `sbi IDENT,VALUE` | Subtract | Yes |
+| `mli IDENT,VALUE` | Multiply | Yes |
+| `dvi IDENT,VALUE` | Divide | Yes |
 
 ## Built-in Identifiers
 

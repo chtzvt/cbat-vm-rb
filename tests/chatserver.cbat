@@ -4,7 +4,7 @@
     "\\E026060n01\room308\SERVER\\ANONCHAT\ADMIN\ANOUNCEMENTS.txt","Welcome to the chat server!\n\nThis is a special re-implementation of a portion of the original CHATSERVER.BAT in CBAT.\nThe experience is more or less authentic.\n\nWith love, Charlton."
 .instrs
     st SNAMME,"default_user"
-    ieq SBRAND,"",ODLAUNCHER
+    ;ieq SBRAND,"",ODLAUNCHER
     l main
     cls
     e "Chat with other people on the network"

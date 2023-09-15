@@ -33,6 +33,8 @@ class Program
             @exec_ctx = :eof if @instructions[@current_instr].nil?
             @prev_instr = @current_instr.dup
 
+            @var_lt.store("PC", @current_instr)
+
             if @debug_log_enable and @current_instr == @entry_point
                 @debug_step = true
                 debug
@@ -52,7 +54,10 @@ class Program
                 @exec_ctx = :running
             when BreakpointInstruction
                 debug
-            when IfEqualInstruction, IfNotEqualInstruction, IfFileExistsInstruction, IfNotFileExistsInstruction
+            when IfEqualInstruction, IfNotEqualInstruction, 
+                IfEqualIntegerInstruction, IfNotEqualIntegerInstruction, 
+                IfGreaterOrEqualIntegerInstruction, IfLessOrEqualIntegerInstruction,
+                IfNotFileExistsInstruction
                 branch_target = @instructions[@current_instr].target(@current_instr)
                 unless branch_target.nil? 
                     @prev_instr = @current_instr

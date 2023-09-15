@@ -13,36 +13,64 @@ class InstructionMap
             SetPromptInstruction.new
         when "af"
             AppendFileInstruction.new
-        when "ieq"
-            IfEqualInstruction.new
+        when "wf"
+            WriteFileInstruction.new
         when "trm"
             TerminateInstruction.new
         when "st"
             StoreInstruction.new
+        when "stf"
+            StoreFromFileInstruction.new
         when "bp"
             BreakpointInstruction.new
         when "nop"
             NopInstruction.new
         when "g"
             GotoInstruction.new
+        when "j"
+            GotoInstruction.new
+        when "ga"
+            GotoAddressInstruction.new
+        when "ja"
+            GotoAddressInstruction.new
         when "p"
             PauseInstruction.new
         when "ieq"
             IfEqualInstruction.new
         when "inq"
             IfNotEqualInstruction.new
+        when "igeqi"
+            IfGreaterOrEqualIntegerInstruction.new
+        when "ileqi"
+            IfLessOrEqualIntegerInstruction.new
+        when "ieiq"
+            IfEqualIntegerInstruction.new
+        when "iniq"
+            IfNotEqualIntegerInstruction.new
         when "iex"
             IfFileExistsInstruction.new
         when "inx"
             IfNotFileExistsInstruction.new
         when "adi"
-            NopInstruction.new
+            AddImmediateInstruction.new
         when "sbi"
-            NopInstruction.new
+            SubtractImmediateInstruction.new
         when "mli"
-            NopInstruction.new
+            MultiplyImmediateInstruction.new
         when "dvi"
-            NopInstruction.new
+            DivideImmediateInstruction.new
+        when "mdi"
+            ModuloImmediateInstruction.new
+        when "add"
+            AddInstruction.new
+        when "sub"
+            SubtractInstruction.new
+        when "mul"
+            MultiplyInstruction.new
+        when "div"
+            DivideInstruction.new
+        when "mod"
+            ModuloInstruction.new
         when "cls"
             ClearScreenInstruction.new
         when "clr"
@@ -129,7 +157,7 @@ class StoreInstruction
 
     def exec
         puts "[debug] store #{@args[0]}='#{@args[1]}'" if @debug_enable
-        @var_lt.store(@args[0], @args[1])
+        @var_lt.store(@args[0], @args[1].batch_interpolate_string(@var_lt))
     end
 
     def to_batch
@@ -138,6 +166,23 @@ class StoreInstruction
 
     def to_cbat
         "st #{@raw_args[0]},\"#{@raw_args[1]}\""
+    end
+end
+
+class StoreFromFileInstruction
+    include Executable
+
+    def exec
+        puts "[debug] store #{@args[0]} from file '#{@args[1]}'" if @debug_enable
+        @var_lt.store(@args[0], @file_lt.read(@args[1].batch_interpolate_string(@var_lt)))
+    end
+
+    def to_batch
+        "::load from file #{@raw_args[0]}=\"#{@raw_args[1]}\""
+    end
+
+    def to_cbat
+        "stf #{@raw_args[0]},\"#{@raw_args[1]}\""
     end
 end
 
@@ -217,6 +262,23 @@ class AppendFileInstruction
     end
 end
 
+class WriteFileInstruction
+    include Executable
+
+    def exec
+        puts "[debug] file write/overwrite #{@args[1]} '#{@args[0].batch_interpolate_string(@var_lt)}'" if @debug_enable
+        @file_lt.write(@args[1].batch_interpolate_string(@var_lt), @args[0].batch_interpolate_string(@var_lt))
+    end
+
+    def to_batch
+        "echo \"#{@raw_args[0]}\" >>\"#{@raw_args[1]}\""
+    end
+
+    def to_cbat
+        "wf \"#{@raw_args[0]}\",\"#{@raw_args[1]}\""
+    end
+end
+
 class TypeFileInstruction
     include Executable
 
@@ -244,15 +306,15 @@ class IfEqualInstruction
     def target(ci)
         puts "[debug] if equal compare '#{@var_lt.get(@args[0])}' to '#{@args[1].batch_interpolate_string(@var_lt)}'" if @debug_enable
         if @var_lt.get(@args[0]) == @args[1].batch_interpolate_string(@var_lt)
-            if @args[1].nil?
+            if @args[2].nil?
                 puts "[debug] \tif equal comparison succeeds, advancing" if @debug_enable
                 ci + 1
             else 
-                puts "[debug] \tif equal comparison succeeds, jumping to #{@args[2]} (#{@label_lt.get(@args[2]).to_i}" if @debug_enable
+                puts "[debug] \tif equal comparison succeeds, jumping to #{@args[2]} (#{@label_lt.get(@args[2]).to_i})" if @debug_enable
                 @label_lt.get(@args[2]).to_i
             end
         else 
-            if @args[1].nil?
+            if @args[2].nil?
                 puts "[debug] \tif equal comparison failed without a label, advancing" if @debug_enable
                 ci + 2
             else 
@@ -281,7 +343,7 @@ class IfNotEqualInstruction
     def target(ci)
         puts "[debug] if not equal compare '#{@var_lt.get(@args[0])}' to '#{@args[1].batch_interpolate_string(@var_lt)}'" if @debug_enable
         if @var_lt.get(@args[0]) != @args[1].batch_interpolate_string(@var_lt)
-            if @args[1].nil?
+            if @args[2].nil?
                 puts "[debug] \tif not equal comparison succeeds, advancing" if @debug_enable
                 ci + 1
             else 
@@ -289,7 +351,7 @@ class IfNotEqualInstruction
                 @label_lt.get(@args[2]).to_i
             end
         else 
-            if @args[1].nil?
+            if @args[2].nil?
                 puts "[debug] \tif not equal comparison failed without a label, advancing" if @debug_enable
                 ci + 2
             else 
@@ -307,6 +369,155 @@ class IfNotEqualInstruction
         "inq \"#{@raw_args[0]}\",\"#{@raw_args[1]}\",#{@raw_args[2]}"
     end
 end
+
+class IfEqualIntegerInstruction
+    include Executable
+
+    def exec
+        @ec = :jump
+    end
+
+    def target(ci)
+        puts "[debug] if equal integer compare '#{@var_lt.get(@args[0])}' to '#{@args[1].batch_interpolate_string(@var_lt)}'" if @debug_enable
+        if @var_lt.get(@args[0]).to_i == @args[1].batch_interpolate_string(@var_lt).to_i
+            if @args[2].nil?
+                puts "[debug] \tif equal integer comparison succeeds, advancing" if @debug_enable
+                ci + 1
+            else 
+                puts "[debug] \tif equal integer comparison succeeds, jumping to #{@args[2]} (#{@label_lt.get(@args[2]).to_i})" if @debug_enable
+                @label_lt.get(@args[2]).to_i
+            end
+        else 
+            if @args[2].nil?
+                puts "[debug] \tif equal integer comparison failed without a label, advancing" if @debug_enable
+                ci + 2
+            else 
+                puts "[debug] \tif equal integer comparison failed with label, advancing" if @debug_enable
+                ci + 1
+            end
+        end
+    end 
+
+    def to_batch
+        "if \"%#{@raw_args[0]}%\" EQU \"#{@raw_args[1]}\" goto #{@raw_args[2]}"
+    end
+
+    def to_cbat
+        "ieiq \"#{@raw_args[0]}\",\"#{@raw_args[1]}\",#{@raw_args[2]}"
+    end
+end
+
+class IfNotEqualIntegerInstruction
+    include Executable
+
+    def exec
+        @ec = :jump
+    end
+
+    def target(ci)
+        puts "[debug] if not equal integer compare '#{@var_lt.get(@args[0])}' to '#{@args[1].batch_interpolate_string(@var_lt)}'" if @debug_enable
+        if @var_lt.get(@args[0]).to_i != @args[1].batch_interpolate_string(@var_lt).to_i
+            if @args[2].nil?
+                puts "[debug] \tif not equal integer comparison succeeds, advancing" if @debug_enable
+                ci + 1
+            else 
+                puts "[debug] \tif not equal integer comparison succeeds, jumping to #{@args[2]} (#{@label_lt.get(@args[2]).to_i}" if @debug_enable
+                @label_lt.get(@args[2]).to_i
+            end
+        else 
+            if @args[2].nil?
+                puts "[debug] \tif not equal integer comparison failed without a label, advancing" if @debug_enable
+                ci + 2
+            else 
+                puts "[debug] \tif not equal integer comparison failed with label, advancing" if @debug_enable
+                ci + 1
+            end
+        end
+    end 
+
+    def to_batch
+        "if \"%#{@raw_args[0]}%\" NOT EQU \"#{@raw_args[1]}\" goto #{@raw_args[2]}"
+    end
+
+    def to_cbat
+        "iniq \"#{@raw_args[0]}\",\"#{@raw_args[1]}\",#{@raw_args[2]}"
+    end
+end
+
+class IfGreaterOrEqualIntegerInstruction
+    include Executable
+
+    def exec
+        @ec = :jump
+    end
+
+    def target(ci)
+        puts "[debug] if greater or equal integer compare '#{@var_lt.get(@args[0])}' to '#{@args[1].batch_interpolate_string(@var_lt)}'" if @debug_enable
+        if @var_lt.get(@args[0]).to_i >= @args[1].batch_interpolate_string(@var_lt).to_i
+            if @args[2].nil?
+                puts "[debug] \tif greater or equal integer comparison succeeds, advancing" if @debug_enable
+                ci + 1
+            else 
+                puts "[debug] \tif greater or equal integer comparison succeeds, jumping to #{@args[2]} (#{@label_lt.get(@args[2]).to_i}" if @debug_enable
+                @label_lt.get(@args[2]).to_i
+            end
+        else 
+            if @args[2].nil?
+                puts "[debug] \tif greater or equal integer comparison failed without a label, advancing" if @debug_enable
+                ci + 2
+            else 
+                puts "[debug] \tif greater or equal integer comparison failed with label, advancing" if @debug_enable
+                ci + 1
+            end
+        end
+    end 
+
+    def to_batch
+        "if \"%#{@raw_args[0]}%\" NOT EQU \"#{@raw_args[1]}\" goto #{@raw_args[2]}"
+    end
+
+    def to_cbat
+        "igeqi \"#{@raw_args[0]}\",\"#{@raw_args[1]}\",#{@raw_args[2]}"
+    end
+end
+
+class IfLessOrEqualIntegerInstruction
+    include Executable
+
+    def exec
+        @ec = :jump
+    end
+
+    def target(ci)
+        puts "[debug] if less or equal integer compare '#{@var_lt.get(@args[0])}' to '#{@args[1].batch_interpolate_string(@var_lt)}'" if @debug_enable
+        if @var_lt.get(@args[0]).to_i <= @args[1].batch_interpolate_string(@var_lt).to_i
+            if @args[2].nil?
+                puts "[debug] \tif less or equal integer comparison succeeds, advancing" if @debug_enable
+                ci + 1
+            else 
+                puts "[debug] \tif less or equal integer comparison succeeds, jumping to #{@args[2]} (#{@label_lt.get(@args[2]).to_i}" if @debug_enable
+                @label_lt.get(@args[2]).to_i
+            end
+        else 
+            if @args[2].nil?
+                puts "[debug] \tif less or equal integer comparison failed without a label, advancing" if @debug_enable
+                ci + 2
+            else 
+                puts "[debug] \tif less or equal integer comparison failed with label, advancing" if @debug_enable
+                ci + 1
+            end
+        end
+    end 
+
+    def to_batch
+        "if \"%#{@raw_args[0]}%\" NOT EQU \"#{@raw_args[1]}\" goto #{@raw_args[2]}"
+    end
+
+    def to_cbat
+        "ileqi \"#{@raw_args[0]}\",\"#{@raw_args[1]}\",#{@raw_args[2]}"
+    end
+end
+
 
 class IfFileExistsInstruction
     include Executable
@@ -408,6 +619,28 @@ class GotoInstruction
 
     def to_cbat
         "g #{@raw_args[0]}"
+    end
+end
+
+class GotoAddressInstruction
+    include Executable
+
+    def exec
+        @ec = :jump_address
+        target
+    end
+
+    def target(cur)
+        puts "[debug] goto address target #{@args[0].batch_interpolate_string(@var_lt).to_i}" if @debug_enable
+        @args[0].batch_interpolate_string(@var_lt).to_i
+    end 
+
+    def to_batch
+        "::jump to address #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "ga #{@raw_args[0]}"
     end
 end
 
@@ -517,3 +750,212 @@ class IllegalInstruction
     end
 end   
 
+class AddImmediateInstruction
+    include Executable
+
+    def exec
+        ident = @args[0].batch_interpolate_string(@var_lt)
+        value = @args[1].batch_interpolate_string(@var_lt).to_i
+        puts "[debug] add immediate #{ident} #{value}" if @debug_enable
+        @var_lt.store(ident, @var_lt.get(ident).to_i + value)
+    end
+
+    def to_batch
+        "::add #{@raw_args[1]} to #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "adi #{@raw_args[0]},#{@raw_args[1]}"
+    end
+end
+
+class SubtractImmediateInstruction
+    include Executable
+
+    def exec
+        ident = @args[0].batch_interpolate_string(@var_lt)
+        value = @args[1].batch_interpolate_string(@var_lt).to_i
+        puts "[debug] subtract immediate #{ident} #{value}" if @debug_enable
+        @var_lt.store(ident, @var_lt.get(ident).to_i - value)
+    end
+
+    def to_batch
+        "::subtract #{@raw_args[1]} from #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "sbi #{@raw_args[0]},#{@raw_args[1]}"
+    end
+end
+
+class MultiplyImmediateInstruction
+    include Executable
+
+    def exec
+        ident = @args[0].batch_interpolate_string(@var_lt)
+        value = @args[1].batch_interpolate_string(@var_lt).to_i
+        puts "[debug] multiply immediate #{ident} #{value}" if @debug_enable
+        @var_lt.store(ident, @var_lt.get(ident).to_i * value)
+    end
+
+    def to_batch
+        "::multiply #{@raw_args[1]} by #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "mli #{@raw_args[0]},#{@raw_args[1]}"
+    end
+end
+
+class DivideImmediateInstruction
+    include Executable
+
+    def exec
+        ident = @args[0].batch_interpolate_string(@var_lt)
+        value = @args[1].batch_interpolate_string(@var_lt).to_i
+        puts "[debug] divide immediate #{ident} #{value}" if @debug_enable
+
+        if value == 0
+            puts "[debug] divide by zero!" if @debug_enable
+            @var_lt.store(ident, 0)
+        else 
+            @var_lt.store(ident, (@var_lt.get(ident).to_i / value).to_i)
+        end
+    end
+
+    def to_batch
+        "::divide #{@raw_args[1]} by #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "dvi #{@raw_args[0]},#{@raw_args[1]}"
+    end
+end
+
+class ModuloImmediateInstruction
+    include Executable
+
+    def exec
+        ident = @args[0].batch_interpolate_string(@var_lt)
+        value = @args[1].batch_interpolate_string(@var_lt).to_i
+        puts "[debug] modulo immediate #{ident} #{value}" if @debug_enable
+
+        @var_lt.store(ident, (@var_lt.get(ident).to_i % value).to_i)
+    end
+
+    def to_batch
+        "::mod #{@raw_args[1]} by #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "mdi #{@raw_args[0]},#{@raw_args[1]}"
+    end
+end
+
+
+class AddInstruction
+    include Executable
+
+    def exec
+        ident = @args[0].batch_interpolate_string(@var_lt)
+        op1 = @var_lt.get(@args[1].batch_interpolate_string(@var_lt)).to_i
+        op2 = @var_lt.get(@args[2].batch_interpolate_string(@var_lt)).to_i
+        puts "[debug] add #{ident} #{op1} #{op2}" if @debug_enable
+        @var_lt.store(ident, op1 + op2)
+    end
+
+    def to_batch
+        "::add #{@raw_args[1]} to #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "add #{@raw_args[0]},#{@raw_args[1]}"
+    end
+end
+
+class SubtractInstruction
+    include Executable
+
+    def exec
+        ident = @args[0].batch_interpolate_string(@var_lt)
+        op1 = @var_lt.get(@args[1].batch_interpolate_string(@var_lt)).to_i
+        op2 = @var_lt.get(@args[2].batch_interpolate_string(@var_lt)).to_i
+        puts "[debug] subtract #{ident} #{op1} #{op2}" if @debug_enable
+        @var_lt.store(ident, op1 - op2)
+    end
+
+    def to_batch
+        "::subtract #{@raw_args[1]} from #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "sbi #{@raw_args[0]},#{@raw_args[1]}"
+    end
+end
+
+class MultiplyInstruction
+    include Executable
+
+    def exec
+        ident = @args[0].batch_interpolate_string(@var_lt)
+        op1 = @var_lt.get(@args[1].batch_interpolate_string(@var_lt)).to_i
+        op2 = @var_lt.get(@args[2].batch_interpolate_string(@var_lt)).to_i
+        puts "[debug] multiply #{ident} #{op1} #{op2}" if @debug_enable
+        @var_lt.store(ident, op1 * op2)
+    end
+
+    def to_batch
+        "::multiply #{@raw_args[1]} by #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "mli #{@raw_args[0]},#{@raw_args[1]}"
+    end
+end
+
+class DivideInstruction
+    include Executable
+
+    def exec
+        ident = @args[0].batch_interpolate_string(@var_lt)
+        op1 = @var_lt.get(@args[1].batch_interpolate_string(@var_lt)).to_i
+        op2 = @var_lt.get(@args[2].batch_interpolate_string(@var_lt)).to_i
+        puts "[debug] divide #{ident} #{op1} #{op2}" if @debug_enable
+
+        if op2 == 0
+            puts "[debug] divide by zero!" if @debug_enable
+            @var_lt.store(ident, 0)
+        else 
+            @var_lt.store(ident, (op1 / op2).to_i)
+        end
+    end
+
+    def to_batch
+        "::divide #{@raw_args[1]} by #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "dvi #{@raw_args[0]},#{@raw_args[1]}"
+    end
+end
+
+class ModuloInstruction
+    include Executable
+
+    def exec
+        ident = @args[0].batch_interpolate_string(@var_lt)
+        op1 = @var_lt.get(@args[1].batch_interpolate_string(@var_lt)).to_i
+        op2 = @var_lt.get(@args[2].batch_interpolate_string(@var_lt)).to_i
+        puts "[debug] modulo #{ident} #{op1} #{op2}" if @debug_enable
+
+        @var_lt.store(ident, (op1 % op2).to_i)
+    end
+
+    def to_batch
+        "::modulo #{@raw_args[1]} by #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "mod #{@raw_args[0]},#{@raw_args[1]}"
+    end
+end

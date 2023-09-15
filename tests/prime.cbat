@@ -1,0 +1,35 @@
+.header
+    filename "prime.bat"
+.instrs
+    ; The following prime factorization algorithm in cbat is
+    ; equivalent to the Ruby implementation given below:
+    ;    $prime = 600851475143  
+    ;    $i = 2
+    ;
+    ;    while $i <= $prime  do
+    ;    if ($prime % $i == 0)
+    ;        $prime = $prime / $i
+    ;        $i = $i - 1
+    ;    end
+    ;
+    ;    $i +=1;
+    ;    end
+    ;
+    ;    puts($i)
+    st PRIME,600851475143
+    st I,2
+    l while
+    ileqi I,"%PRIME%",loop
+    g done
+    l loop
+    mod RESULT,PRIME,I
+    ieiq RESULT,0,divide
+    g incr
+    l divide
+    div PRIME,PRIME,I
+    sbi I,1
+    l incr
+    adi I,1
+    g while
+    l done
+    e "%I%"

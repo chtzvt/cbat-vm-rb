@@ -105,7 +105,7 @@ class FileLookupTable
     end
 
     def write(name, content)
-        overwrite_file(name, content)
+        overwrite(name, content)
     end
 end 
 

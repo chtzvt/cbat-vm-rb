@@ -1,0 +1,27 @@
+.header 
+    filename "MATH.BAT"
+.instrs
+    l main
+    st NUM,"0"
+    l addloop
+    ieiq NUM,10,subloop
+    e "I'm counting up from %NUM%!"
+    adi NUM,1
+    g addloop
+    l subloop
+    ieiq NUM,0,multtest
+    e "I'm counting down from %NUM%!"
+    sbi NUM,1
+    g subloop
+    l multtest
+    st NUM,"50"
+    e "I'm multiplying %NUM% by 2!"
+    mli NUM,2
+    ieiq NUM,100
+    e "Yay!"
+    e "I'm dividing %NUM% by 2!"
+    dvi NUM,2
+    ieiq NUM,50
+    e "Yay!"
+    e "Done!"
+    trm
