@@ -20,9 +20,17 @@ class CBATLoader
         hit_file = false
 
         File.open(path).each_line do |line|
-            line = line.chomp.strip
+            line.chomp!
+            next if line.nil?
 
-            next if line.start_with?(";")
+            line.strip!
+
+            # skip comments and empty lines
+            next if line.start_with?(";") || line.empty?
+
+            # strip comments from the end of the line
+            line.sub!(/;.*/, '')
+            line.strip!
 
             case line
             when ".global"
@@ -92,7 +100,7 @@ class CBATLoader
 
     def read_files_field(field)
         kv = field.split('","')
-        @file_lt.store(kv[0], kv[1..].join(' ').delete_prefix('"').delete_suffix('"').gsub!("\\n","\n"))
+        @file_lt.store(kv[0], kv[1..].join(' ').delete_prefix('"').delete_suffix('"').gsub("\\n","\n"))
     end 
 
     def read_header_field(field)
