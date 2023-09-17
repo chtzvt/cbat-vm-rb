@@ -15,11 +15,15 @@ class InstructionMap
             AppendFileInstruction.new
         when "wf"
             WriteFileInstruction.new
+        when "wfi"
+            WriteFileIndexInstruction.new
         when "trm"
             TerminateInstruction.new
         when "st"
             StoreInstruction.new
-        when "stf"
+        when "stfi"
+            StoreFromFileIndexInstruction.new
+        when "stfc"
             StoreFromFileInstruction.new
         when "bp"
             BreakpointInstruction.new
@@ -33,6 +37,12 @@ class InstructionMap
             GotoAddressInstruction.new
         when "ja"
             GotoAddressInstruction.new
+        when "gsub"
+            GotoSubroutineInstruction.new
+        when "jsub"
+            GotoSubroutineInstruction.new
+        when "ret"
+            ReturnInstruction.new
         when "p"
             PauseInstruction.new
         when "ieq"
@@ -186,6 +196,23 @@ class StoreFromFileInstruction
     end
 end
 
+class StoreFromFileIndexInstruction
+    include Executable
+
+    def exec
+        puts "[debug] store to #{@args[0]} from index #{@args[2]} in file '#{@args[1]}'" if @debug_enable
+        @var_lt.store(@args[0], @file_lt.read(@args[1].batch_interpolate_string(@var_lt))[@args[2].batch_interpolate_string(@var_lt).to_i])
+    end
+
+    def to_batch
+        "::load from file index #{@raw_args[0]}=\"#{@raw_args[1]}\""
+    end
+
+    def to_cbat
+        "stfi #{@raw_args[0]},\"#{@raw_args[1]}\",#{@raw_args[2]}"
+    end
+end
+
 class SetPromptInstruction
     include Executable
 
@@ -276,6 +303,27 @@ class WriteFileInstruction
 
     def to_cbat
         "wf \"#{@raw_args[0]}\",\"#{@raw_args[1]}\""
+    end
+end
+
+class WriteFileIndexInstruction
+    include Executable
+
+    def exec
+        puts "[debug] write value #{@args[2]} at index #{@args[1]} in file '#{@args[0]}'" if @debug_enable
+        filename = @args[0].batch_interpolate_string(@var_lt)
+        index = @args[1].batch_interpolate_string(@var_lt).to_i
+        original_file_content = @file_lt.read(filename)
+        original_file_content[index] = @args[2].batch_interpolate_string(@var_lt)
+        @file_lt.write(@args[0].batch_interpolate_string(@var_lt), original_file_content)
+    end
+
+    def to_batch
+        "::load from file index #{@raw_args[0]}=\"#{@raw_args[1]}\""
+    end
+
+    def to_cbat
+        "wfi #{@raw_args[0]},\"#{@raw_args[1]}\",#{@raw_args[2]}"
     end
 end
 
@@ -601,7 +649,7 @@ class GotoInstruction
         target
     end
 
-    def target(cur)
+    def target
         case @args[0].batch_interpolate_string(@var_lt).downcase.to_sym
         when :cbat_next
             cur + 1
@@ -622,6 +670,28 @@ class GotoInstruction
     end
 end
 
+class GotoSubroutineInstruction
+    include Executable
+
+    def exec
+        @ec = :jump
+    end
+
+    def target(cur)
+        puts "[debug] goto subroutine target #{@args[0].batch_interpolate_string(@var_lt)}@#{@label_lt.get(@args[0].batch_interpolate_string(@var_lt)).to_i}" if @debug_enable
+        @var_lt.store("RA", cur + 1)
+        @label_lt.get(@args[0].batch_interpolate_string(@var_lt)).to_i
+    end 
+
+    def to_batch
+        "::goto subroutine #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "gsub #{@raw_args[0]}"
+    end
+end
+
 class GotoAddressInstruction
     include Executable
 
@@ -630,7 +700,7 @@ class GotoAddressInstruction
         target
     end
 
-    def target(cur)
+    def target
         puts "[debug] goto address target #{@args[0].batch_interpolate_string(@var_lt).to_i}" if @debug_enable
         @args[0].batch_interpolate_string(@var_lt).to_i
     end 
@@ -641,6 +711,28 @@ class GotoAddressInstruction
 
     def to_cbat
         "ga #{@raw_args[0]}"
+    end
+end
+
+class ReturnInstruction
+    include Executable
+
+    def exec
+        @ec = :jump_address
+        target
+    end
+
+    def target
+        puts "[debug] goto address target #{@args[0].batch_interpolate_string(@var_lt).to_i}" if @debug_enable
+        @var_lt.get(@args[0].batch_interpolate_string(@var_lt)).to_i
+    end 
+
+    def to_batch
+        "::jump to address #{@raw_args[0]}"
+    end
+
+    def to_cbat
+        "ret #{@raw_args[0]}"
     end
 end
 

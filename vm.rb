@@ -49,8 +49,8 @@ class Program
                 @exec_ctx = :terminated
             when LabelInstruction
                 @label_lt.store(@instructions[@current_instr].args[0], @current_instr)
-            when GotoInstruction
-                @current_instr = @instructions[@current_instr].target(@current_instr)
+            when GotoInstruction, GotoAddressInstruction
+                @current_instr = @instructions[@current_instr].target
                 @exec_ctx = :running
             when BreakpointInstruction
                 debug
