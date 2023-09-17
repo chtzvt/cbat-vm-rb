@@ -1,0 +1,44 @@
+.header
+    ; this program demonstrates a pattern for implementing
+    ; callable cbat subroutines using labels with a stored 
+    ; return address. The call instruction is not used, 
+    ; and neither is the jsub instruction.
+    filename "return_address.bat"
+.instrs
+    l main
+
+    e "First print is at %PC%"
+
+    ; manually set up call to subroutine a
+    st RET_ADDR,"%PC%" ; store current program counter to return address
+    adi RET_ADDR,2 ; increment return address by 2 (to skip past the next jump instruction when resuming)
+    j subr_a
+
+    e "Second print is at %PC%" ; execution resumes here after subroutine a exits
+    
+    jsub subr_a
+    
+    e "Execution resumes from jsub at %PC%."
+
+    j end
+
+    l subr_a
+    e "Subroutine A prints at %PC%" ; nice
+    j subr_exit
+
+    e "This is never executed"
+
+    l subr_exit
+    ; jsub will populate %RA% with the return address
+    ; if RA is defined and has a value, jump to it
+    inq RA,"undefined"
+    ret
+
+    e "Returning to %RET_ADDR%"
+    ja "%RET_ADDR%"
+
+    l end 
+    ; feel free to play around in the debugger and 
+    ; examine the state of the vm
+    bp
+    trm

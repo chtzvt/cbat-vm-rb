@@ -4,7 +4,9 @@
     "STACK/0","0"
 .instrs
     l main
+    
     cls
+
     e "Stack!"
     e ""
     e "0. Initialize the stack"
@@ -16,17 +18,28 @@
     e "6. Peek at the top of the stack"
     e "7. Exit"
     e ""
+
     stp ARG0,"Select an option:"
-    ieiq ARG0,0,init
-    ieiq ARG0,1,print
-    ieiq ARG0,2,push
-    ieiq ARG0,3,pop
-    ieiq ARG0,4,grow
-    ieiq ARG0,5,shrink
-    ieiq ARG0,6,peek
-    ieiq ARG0,7,exit
+    ieiq ARG0,0
+    jsub init
+    ieiq ARG0,1
+    jsub print
+    ieiq ARG0,2
+    jsub push
+    ieiq ARG0,3
+    jsub pop
+    ieiq ARG0,4
+    jsub grow
+    ieiq ARG0,5
+    jsub shrink
+    ieiq ARG0,6
+    jsub peek
+    ieiq ARG0,7
+    jsub exit
+    
     e "Invalid option :("
     g main
+
     ;
     ; stack setup
     ; 
